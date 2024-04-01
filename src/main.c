@@ -18,17 +18,37 @@ int main() {
     Body body1 = {{winWidth / 3, winHeight / 2}, {0, 1.4}, {0, 0}, 500};
     Body body2 = {{winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}, 5000000000000};
 
-    double distance = 0.0f;
-    double force = 0.0f;
-    double angle = 0.0f;
-    double forceX = 0.0f;
-    double forceY = 0.0f;
+    double distance = 0;
+    double force = 0;
+    double angle = 0;
+    double forceX = 0;
+    double forceY = 0;
+
+    int lastMousePosX = 0;
+    int lastMousePosY = 0;
+    int mouseOffsetX = -winWidth / 2;
+    int mouseOffsetY = -winHeight / 2;
+
+    float zoom = 1.0f;
+    int scroll = 0;
 
     InitWindow(winWidth, winHeight, "basic window");
 
     SetTargetFPS(60);
 
     while (WindowShouldClose() == false) {
+        scroll = GetMouseWheelMove();
+        if (scroll != 0) {
+            zoom += scroll * 0.05f;
+        }
+
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            mouseOffsetX += (GetMouseX() - lastMousePosX) / zoom;
+            mouseOffsetY += (GetMouseY() - lastMousePosY) / zoom;
+        }
+        lastMousePosX = GetMousePosition().x;
+        lastMousePosY = GetMousePosition().y;
+
         // body1
         distance = sqrt(pow((body2.position.x - body1.position.x), 2) + pow((body2.position.y - body1.position.y), 2));
         force = G * body1.mass * body2.mass / pow(distance, 2);
@@ -39,11 +59,11 @@ int main() {
         body1.acceleration.x = forceX / body1.mass;
         body1.acceleration.y = forceY / body1.mass;
 
-        body1.velocity.x = body1.velocity.x + body1.acceleration.x;
-        body1.velocity.y = body1.velocity.y + body1.acceleration.y;
+        body1.velocity.x += body1.acceleration.x;
+        body1.velocity.y += body1.acceleration.y;
 
-        body1.position.x = body1.position.x + body1.velocity.x;
-        body1.position.y = body1.position.y + body1.velocity.y;
+        body1.position.x += body1.velocity.x;
+        body1.position.y += body1.velocity.y;
 
         // body2
         distance = sqrt(pow((body1.position.x - body2.position.x), 2) + pow((body1.position.y - body2.position.y), 2));
@@ -55,18 +75,18 @@ int main() {
         body2.acceleration.x = forceX / body2.mass;
         body2.acceleration.y = forceY / body2.mass;
 
-        body2.velocity.x = body2.velocity.x + body2.acceleration.x;
-        body2.velocity.y = body2.velocity.y + body2.acceleration.y;
+        body2.velocity.x += body2.acceleration.x;
+        body2.velocity.y += body2.acceleration.y;
 
-        body2.position.x = body2.position.x + body2.velocity.x;
-        body2.position.y = body2.position.y + body2.velocity.y;
+        body2.position.x += body2.velocity.x;
+        body2.position.y += body2.velocity.y;
 
         BeginDrawing();
 
         ClearBackground(WHITE);
 
-        DrawCircle(body1.position.x, body1.position.y, 20, BLACK);
-        DrawCircle(body2.position.x, body2.position.y, 55, BLACK);
+        DrawCircle((body1.position.x + mouseOffsetX) * zoom + winWidth / 2, (body1.position.y + mouseOffsetY) * zoom + winHeight / 2, 20 * zoom, BLACK);
+        DrawCircle((body2.position.x + mouseOffsetX) * zoom + winWidth / 2, (body2.position.y + mouseOffsetY) * zoom + winHeight / 2, 55 * zoom, BLACK);
 
         EndDrawing();
     }
