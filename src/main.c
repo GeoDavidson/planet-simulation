@@ -2,7 +2,7 @@
 #include <raylib.h>
 #include <stdio.h>
 
-double G = 6.67430e+1; // 6.674e-11
+double G = 6.674e-11;
 
 typedef struct {
     Vector2 position;
@@ -15,29 +15,21 @@ int main() {
     const int winWidth = 800;
     const int winHeight = 450;
 
-    Body body1 = {{winWidth / 3, winHeight / 2}, {0, 4}, {0, 0}, 42};
-    Body body2 = {{winWidth / 2, winHeight / 2}, {0, -4}, {0, 0}, 42};
+    Body body1 = {{winWidth / 3, winHeight / 2}, {0, 1.4}, {0, 0}, 500};
+    Body body2 = {{winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}, 5000000000000};
 
-    float distance = sqrt(pow((body2.position.x - body1.position.x), 2) + pow((body2.position.y - body1.position.y), 2));
-    float force = G * body1.mass * body2.mass / pow(distance, 2);
-    float angle = atan2(body2.position.y - body1.position.y, body2.position.x - body1.position.x);
-    float forceX = force * cos(angle);
-    float forceY = force * sin(angle);
-
-    body1.acceleration.x = forceX / body1.mass;
-    body1.acceleration.y = forceY / body1.mass;
-
-    body1.velocity.x = body1.velocity.x + body1.acceleration.x;
-    body1.velocity.y = body1.velocity.y + body1.acceleration.y;
-
-    body1.position.x = body1.position.x + body1.velocity.x;
-    body1.position.y = body1.position.y + body1.velocity.y;
+    double distance = 0.0f;
+    double force = 0.0f;
+    double angle = 0.0f;
+    double forceX = 0.0f;
+    double forceY = 0.0f;
 
     InitWindow(winWidth, winHeight, "basic window");
 
     SetTargetFPS(60);
 
     while (WindowShouldClose() == false) {
+        // body1
         distance = sqrt(pow((body2.position.x - body1.position.x), 2) + pow((body2.position.y - body1.position.y), 2));
         force = G * body1.mass * body2.mass / pow(distance, 2);
         angle = atan2(body2.position.y - body1.position.y, body2.position.x - body1.position.x);
@@ -53,6 +45,7 @@ int main() {
         body1.position.x = body1.position.x + body1.velocity.x;
         body1.position.y = body1.position.y + body1.velocity.y;
 
+        // body2
         distance = sqrt(pow((body1.position.x - body2.position.x), 2) + pow((body1.position.y - body2.position.y), 2));
         force = G * body2.mass * body1.mass / pow(distance, 2);
         angle = atan2(body1.position.y - body2.position.y, body1.position.x - body2.position.x);
@@ -72,8 +65,8 @@ int main() {
 
         ClearBackground(WHITE);
 
-        DrawCircle(body1.position.x, body1.position.y, 25, BLACK);
-        DrawCircle(body2.position.x, body2.position.y, 50, BLACK);
+        DrawCircle(body1.position.x, body1.position.y, 20, BLACK);
+        DrawCircle(body2.position.x, body2.position.y, 55, BLACK);
 
         EndDrawing();
     }
