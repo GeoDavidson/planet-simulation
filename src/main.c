@@ -12,18 +12,24 @@ typedef struct {
     float mass;
 } Body;
 
+Vector2 calculateForce(Body body1, Body body2) {
+    Vector2 force = {};
+    double distance = sqrt(pow((body2.position.x - body1.position.x), 2) + pow((body2.position.y - body1.position.y), 2));
+    double forceMagnitude = G * body1.mass * body2.mass / pow(distance, 2);
+    double angle = atan2(body2.position.y - body1.position.y, body2.position.x - body1.position.x);
+    force.x = forceMagnitude * cos(angle);
+    force.y = forceMagnitude * sin(angle);
+    return force;
+}
+
 int main() {
     const int winWidth = 800;
     const int winHeight = 450;
 
-    Body body1 = {{winWidth / 3, winHeight / 2}, {0, 1.4}, {0, 0}, 500};
+    Body body1 = {{winWidth / 3, winHeight / 2}, {0, 1}, {0, 0}, 500000000000};
     Body body2 = {{winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}, 5000000000000};
 
-    double distance = 0;
-    double force = 0;
-    double angle = 0;
-    double forceX = 0;
-    double forceY = 0;
+    Vector2 force = {0.0f, 0.0f};
 
     int lastMousePosX = 0;
     int lastMousePosY = 0;
@@ -47,15 +53,10 @@ int main() {
         lastMousePosX = GetMousePosition().x;
         lastMousePosY = GetMousePosition().y;
 
-        // body1
-        distance = sqrt(pow((body2.position.x - body1.position.x), 2) + pow((body2.position.y - body1.position.y), 2));
-        force = G * body1.mass * body2.mass / pow(distance, 2);
-        angle = atan2(body2.position.y - body1.position.y, body2.position.x - body1.position.x);
-        forceX = force * cos(angle);
-        forceY = force * sin(angle);
+        force = calculateForce(body1, body2);
 
-        body1.acceleration.x = forceX / body1.mass;
-        body1.acceleration.y = forceY / body1.mass;
+        body1.acceleration.x = force.x / body1.mass;
+        body1.acceleration.y = force.y / body1.mass;
 
         body1.velocity.x += body1.acceleration.x;
         body1.velocity.y += body1.acceleration.y;
@@ -63,15 +64,10 @@ int main() {
         body1.position.x += body1.velocity.x;
         body1.position.y += body1.velocity.y;
 
-        // body2
-        distance = sqrt(pow((body1.position.x - body2.position.x), 2) + pow((body1.position.y - body2.position.y), 2));
-        force = G * body2.mass * body1.mass / pow(distance, 2);
-        angle = atan2(body1.position.y - body2.position.y, body1.position.x - body2.position.x);
-        forceX = force * cos(angle);
-        forceY = force * sin(angle);
+        force = calculateForce(body2, body1);
 
-        body2.acceleration.x = forceX / body2.mass;
-        body2.acceleration.y = forceY / body2.mass;
+        body2.acceleration.x = force.x / body2.mass;
+        body2.acceleration.y = force.y / body2.mass;
 
         body2.velocity.x += body2.acceleration.x;
         body2.velocity.y += body2.acceleration.y;
@@ -83,8 +79,8 @@ int main() {
 
         ClearBackground(WHITE);
 
-        DrawCircle((body1.position.x + mouseOffsetX) * zoom + winWidth / 2, (body1.position.y + mouseOffsetY) * zoom + winHeight / 2, 20 * zoom, BLACK);
-        DrawCircle((body2.position.x + mouseOffsetX) * zoom + winWidth / 2, (body2.position.y + mouseOffsetY) * zoom + winHeight / 2, 55 * zoom, BLACK);
+        DrawCircle((body1.position.x + mouseOffsetX) * zoom + winWidth / 2, (body1.position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
+        DrawCircle((body2.position.x + mouseOffsetX) * zoom + winWidth / 2, (body2.position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
 
         EndDrawing();
     }
