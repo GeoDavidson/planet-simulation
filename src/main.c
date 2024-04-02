@@ -1,5 +1,6 @@
 #include <math.h>
 #include <raylib.h>
+#include <raymath.h>
 #include <stdio.h>
 
 double G = 6.674e-11;
@@ -37,10 +38,8 @@ int main() {
     SetTargetFPS(60);
 
     while (WindowShouldClose() == false) {
-        // zoom
-        zoom += GetMouseWheelMove() * 0.05f;
+        zoom = Clamp(zoom + GetMouseWheelMove() * zoomSpeed, zoomSpeed, 10.0f);
 
-        // move
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             mouseOffsetX += (GetMouseX() - lastMousePosX) / zoom;
             mouseOffsetY += (GetMouseY() - lastMousePosY) / zoom;
