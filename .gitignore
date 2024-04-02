@@ -1,2 +1,3 @@
-obj/
+obj/*
+!obj/*.gitkeep
 *.exe
