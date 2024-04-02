@@ -26,22 +26,21 @@ int main() {
 
     int lastMousePosX = 0;
     int lastMousePosY = 0;
-    int mouseOffsetX = -winWidth / 2;
-    int mouseOffsetY = -winHeight / 2;
+    float mouseOffsetX = -winWidth / 2;
+    float mouseOffsetY = -winHeight / 2;
 
     float zoom = 1.0f;
-    int scroll = 0;
+    float zoomSpeed = 0.05f;
 
     InitWindow(winWidth, winHeight, "basic window");
 
     SetTargetFPS(60);
 
     while (WindowShouldClose() == false) {
-        scroll = GetMouseWheelMove();
-        if (scroll != 0) {
-            zoom += scroll * 0.05f;
-        }
+        // zoom
+        zoom += GetMouseWheelMove() * 0.05f;
 
+        // move
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             mouseOffsetX += (GetMouseX() - lastMousePosX) / zoom;
             mouseOffsetY += (GetMouseY() - lastMousePosY) / zoom;
