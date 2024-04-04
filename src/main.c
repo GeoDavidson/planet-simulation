@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #define G 6.674e-11
-#define MAX_PARTICLES 1000
+#define MAX_PARTICLES 1500
 #define MAX_BODIES 3
 
 typedef struct {
@@ -29,28 +29,14 @@ int main() {
         {25, 5000000000000, {winWidth / 1.5, winHeight / 2}, {0, -1}, {0, 0}},
     };
 
-    Particle particles1[MAX_PARTICLES];
-    int particleIndex1 = 0;
+    Particle particles[MAX_PARTICLES];
+    int particleIndex = 0;
+    int bodyIndex = 0;
 
     for (int i = 0; i < MAX_PARTICLES; i++) {
-        particles1[i].position.x = bodies[0].position.x;
-        particles1[i].position.y = bodies[0].position.y;
-    }
-
-    Particle particles2[MAX_PARTICLES];
-    int particleIndex2 = 0;
-
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        particles2[i].position.x = bodies[1].position.x;
-        particles2[i].position.y = bodies[1].position.y;
-    }
-
-    Particle particles3[MAX_PARTICLES];
-    int particleIndex3 = 0;
-
-    for (int i = 0; i < MAX_PARTICLES; i++) {
-        particles3[i].position.x = bodies[2].position.x;
-        particles3[i].position.y = bodies[2].position.y;
+        particles[i].position.x = bodies[bodyIndex].position.x;
+        particles[i].position.y = bodies[bodyIndex].position.y;
+        bodyIndex = (bodyIndex + 1) % MAX_BODIES;
     }
 
     int lastMousePosX = 0;
@@ -102,38 +88,22 @@ int main() {
             }
         }
 
-        particles1[particleIndex1].position.x = bodies[0].position.x;
-        particles1[particleIndex1].position.y = bodies[0].position.y;
-
-        particleIndex1 = (particleIndex1 + 1) % MAX_PARTICLES;
-
-        particles2[particleIndex2].position.x = bodies[1].position.x;
-        particles2[particleIndex2].position.y = bodies[1].position.y;
-
-        particleIndex2 = (particleIndex2 + 1) % MAX_PARTICLES;
-
-        particles3[particleIndex3].position.x = bodies[2].position.x;
-        particles3[particleIndex3].position.y = bodies[2].position.y;
-
-        particleIndex3 = (particleIndex3 + 1) % MAX_PARTICLES;
+        particles[particleIndex].position.x = bodies[bodyIndex].position.x;
+        particles[particleIndex].position.y = bodies[bodyIndex].position.y;
+        particleIndex = (particleIndex + 1) % MAX_PARTICLES;
+        bodyIndex = (bodyIndex + 1) % MAX_BODIES;
 
         BeginDrawing();
 
         ClearBackground(WHITE);
 
         for (int i = 0; i < MAX_PARTICLES; i++) {
-            DrawCircle((particles1[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (particles1[i].position.y + mouseOffsetY) * zoom + winHeight / 2, 5 * zoom, LIGHTGRAY);
-            DrawCircle((particles2[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (particles2[i].position.y + mouseOffsetY) * zoom + winHeight / 2, 5 * zoom, LIGHTGRAY);
-            DrawCircle((particles3[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (particles3[i].position.y + mouseOffsetY) * zoom + winHeight / 2, 5 * zoom, LIGHTGRAY);
+            DrawCircle((particles[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (particles[i].position.y + mouseOffsetY) * zoom + winHeight / 2, 5 * zoom, LIGHTGRAY);
         }
 
         for (int i = 0; i < MAX_BODIES; i++) {
             DrawCircle((bodies[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[i].position.y + mouseOffsetY) * zoom + winHeight / 2, bodies[i].radius * zoom, BLACK);
         }
-
-        // DrawCircle((bodies[0].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[0].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
-        // DrawCircle((bodies[1].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[1].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
-        // DrawCircle((bodies[2].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[2].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
 
         DrawText(TextFormat("%d", GetFPS()), 5, 5, 25, BLACK);
 
