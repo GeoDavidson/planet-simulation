@@ -8,34 +8,25 @@
 #define MAX_BODIES 3
 
 typedef struct {
+    int radius;
+    float mass;
     Vector2 position;
     Vector2 velocity;
     Vector2 acceleration;
-    float mass;
 } Body;
 
 typedef struct {
     Vector2 position;
 } Particle;
 
-Vector2 calculateForce(Body body1, Body body2) {
-    Vector2 force = {};
-    double distance = sqrt(pow((body2.position.x - body1.position.x), 2) + pow((body2.position.y - body1.position.y), 2));
-    double forceMagnitude = G * body1.mass * body2.mass / pow(distance, 2);
-    double angle = atan2(body2.position.y - body1.position.y, body2.position.x - body1.position.x);
-    force.x = forceMagnitude * cos(angle);
-    force.y = forceMagnitude * sin(angle);
-    return force;
-}
-
 int main() {
     const int winWidth = 800;
     const int winHeight = 450;
 
     Body bodies[MAX_BODIES] = {
-        {{winWidth / 3, winHeight / 2}, {0, 1}, {0, 0}, 500000000000},
-        {{winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}, 5000000000000},
-        {{winWidth / 1.5, winHeight / 2}, {0, -1}, {0, 0}, 5000000000000}
+        {25, 500000000000, {winWidth / 3, winHeight / 2}, {0, 1}, {0, 0}},
+        {25, 5000000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}},
+        {25, 5000000000000, {winWidth / 1.5, winHeight / 2}, {0, -1}, {0, 0}},
     };
 
     Particle particles1[MAX_PARTICLES];
@@ -62,8 +53,6 @@ int main() {
         particles3[i].position.y = bodies[2].position.y;
     }
 
-    Vector2 force = {0.0f, 0.0f};
-
     int lastMousePosX = 0;
     int lastMousePosY = 0;
     float mouseOffsetX = -winWidth / 2;
@@ -71,6 +60,12 @@ int main() {
 
     float zoom = 1.0f;
     float zoomSpeed = 0.05f;
+
+    double distance = 0;
+    double force = 0;
+    double angle = 0;
+    double forceX = 0;
+    double forceY = 0;
 
     InitWindow(winWidth, winHeight, "basic window");
 
@@ -89,10 +84,14 @@ int main() {
         for (int i = 0; i < MAX_BODIES; i++) {
             for (int j = 0; j < MAX_BODIES; j++) {
                 if (i != j) {
-                    force = calculateForce(bodies[i], bodies[j]);
+                    distance = sqrt(pow((bodies[j].position.x - bodies[i].position.x), 2) + pow((bodies[j].position.y - bodies[i].position.y), 2));
+                    force = G * bodies[i].mass * bodies[j].mass / pow(distance, 2);
+                    angle = atan2(bodies[j].position.y - bodies[i].position.y, bodies[j].position.x - bodies[i].position.x);
+                    forceX = force * cos(angle);
+                    forceY = force * sin(angle);
 
-                    bodies[i].acceleration.x = force.x / bodies[i].mass;
-                    bodies[i].acceleration.y = force.y / bodies[i].mass;
+                    bodies[i].acceleration.x = forceX / bodies[i].mass;
+                    bodies[i].acceleration.y = forceY / bodies[i].mass;
 
                     bodies[i].velocity.x += bodies[i].acceleration.x;
                     bodies[i].velocity.y += bodies[i].acceleration.y;
@@ -128,9 +127,13 @@ int main() {
             DrawCircle((particles3[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (particles3[i].position.y + mouseOffsetY) * zoom + winHeight / 2, 5 * zoom, LIGHTGRAY);
         }
 
-        DrawCircle((bodies[0].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[0].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
-        DrawCircle((bodies[1].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[1].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
-        DrawCircle((bodies[2].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[2].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
+        for (int i = 0; i < MAX_BODIES; i++) {
+            DrawCircle((bodies[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[i].position.y + mouseOffsetY) * zoom + winHeight / 2, bodies[i].radius * zoom, BLACK);
+        }
+
+        // DrawCircle((bodies[0].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[0].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
+        // DrawCircle((bodies[1].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[1].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
+        // DrawCircle((bodies[2].position.x + mouseOffsetX) * zoom + winWidth / 2, (bodies[2].position.y + mouseOffsetY) * zoom + winHeight / 2, 25 * zoom, BLACK);
 
         DrawText(TextFormat("%d", GetFPS()), 5, 5, 25, BLACK);
 
