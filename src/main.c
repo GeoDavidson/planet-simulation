@@ -60,12 +60,8 @@ int main() {
     body_t *currentIndex1 = head;
     body_t *currentIndex2 = head;
 
-    Camera2D camera;
-    camera.offset.x = winWidth / 2;
-    camera.offset.y = winHeight / 2;
-    camera.target.x = winWidth / 2;
-    camera.target.y = winHeight / 2;
-    camera.zoom = 0.25f;
+    Camera2D camera = {0};
+    camera.zoom = 1.0f;
 
     Vector2 mouseDelta = {0.0f, 0.0f};
     float mouseWheel = 0.0f;
