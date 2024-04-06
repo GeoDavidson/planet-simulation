@@ -7,10 +7,11 @@
 #define MAX_PARTICLES 2000
 #define INIT_BODIES 4
 
-typedef struct {
+typedef struct particle {
+    int radius;
     Color color;
     Vector2 position;
-} Particle;
+} particle_t;
 
 typedef struct body {
     int radius;
@@ -72,13 +73,15 @@ int main() {
     body_t *currentIndex1 = head;
     body_t *currentIndex2 = head;
 
-    Particle particles[MAX_PARTICLES];
+    particle_t particles[MAX_PARTICLES];
     int particleIndex = 0;
 
+    Color colors[3] = {RED, GREEN, BLUE};
     for (int i = 0; i < MAX_PARTICLES; i++) {
+        particles[i].radius = i % 3 * 2 + 5;
+        particles[i].color = colors[i % 3];
         particles[i].position.x = 0;
         particles[i].position.y = 0;
-        particles[i].color = WHITE;
     }
 
     int lastMousePosX = 0;
@@ -138,7 +141,6 @@ int main() {
         while (currentIndex1 != NULL) {
             particles[particleIndex].position.x = currentIndex1->position.x;
             particles[particleIndex].position.y = currentIndex1->position.y;
-            particles[particleIndex].color = GRAY;
             particleIndex = (particleIndex + 1) % MAX_PARTICLES;
             currentIndex1 = currentIndex1->nextBody;
         }
@@ -148,7 +150,7 @@ int main() {
         ClearBackground(WHITE);
 
         for (int i = 0; i < MAX_PARTICLES; i++) {
-            DrawCircle((particles[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (particles[i].position.y + mouseOffsetY) * zoom + winHeight / 2, 5 * zoom, particles[i].color);
+            DrawCircle((particles[i].position.x + mouseOffsetX) * zoom + winWidth / 2, (particles[i].position.y + mouseOffsetY) * zoom + winHeight / 2, particles[i].radius * zoom, particles[i].color);
         }
 
         currentIndex1 = head;
