@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 #define G 6.674e-11
-#define MAX_PARTICLES 1500
-#define MAX_BODIES 3
+#define MAX_PARTICLES 300
+#define MAX_BODIES 4
 
 typedef struct {
     int radius;
@@ -23,9 +23,10 @@ int main() {
     const int winHeight = 450;
 
     Body bodies[MAX_BODIES] = {
-        {25, 500000000000, {winWidth / 3, winHeight / 2}, {0, 1}, {0, 0}},
-        {25, 5000000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}},
-        {25, 5000000000000, {winWidth / 1.5, winHeight / 2}, {0, -1}, {0, 0}},
+        {17, 500000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}},
+        {25, 5000000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}},
+        {25, 5000000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}},
+        {200, 1000000000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}},
     };
 
     Particle particles[MAX_PARTICLES];
