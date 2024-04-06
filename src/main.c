@@ -1,10 +1,10 @@
 #include "raylib.h"
 #include "raymath.h"
-// #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define G 6.674e-11
-#define INIT_BODIES 4
+#define ZOOM_SPEED 0.025f
 
 typedef struct body {
     int radius;
@@ -41,9 +41,11 @@ int main() {
     const int winWidth = 800;
     const int winHeight = 450;
 
+    InitWindow(winWidth, winHeight, "basic window");
+
     body_t *head = NULL;
 
-    body_t bodies[INIT_BODIES] = {
+    body_t bodies[4] = {
         {17, 500000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}},
         {25, 5000000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}},
         {25, 5000000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}},
@@ -58,13 +60,15 @@ int main() {
     body_t *currentIndex1 = head;
     body_t *currentIndex2 = head;
 
-    int lastMousePosX = 0;
-    int lastMousePosY = 0;
-    float mouseOffsetX = -winWidth / 2;
-    float mouseOffsetY = -winHeight / 2;
+    Camera2D camera;
+    camera.offset.x = winWidth / 2;
+    camera.offset.y = winHeight / 2;
+    camera.target.x = winWidth / 2;
+    camera.target.y = winHeight / 2;
+    camera.zoom = 0.25f;
 
-    float zoom = 1.0f;
-    float zoomSpeed = 0.05f;
+    Vector2 mouseDelta = {0.0f, 0.0f};
+    float mouseWheel = 0.0f;
 
     double distance = 0;
     double force = 0;
@@ -72,19 +76,21 @@ int main() {
     double forceX = 0;
     double forceY = 0;
 
-    InitWindow(winWidth, winHeight, "basic window");
-
     SetTargetFPS(60);
 
     while (WindowShouldClose() == false) {
-        zoom = Clamp(zoom + GetMouseWheelMove() * zoomSpeed, zoomSpeed, 10.0f);
+        mouseWheel = GetMouseWheelMove();
+        if (mouseWheel != 0) {
+            camera.target = GetScreenToWorld2D(GetMousePosition(), camera);
+            camera.offset = GetMousePosition();
+            camera.zoom = Clamp(camera.zoom + mouseWheel * ZOOM_SPEED, ZOOM_SPEED, 10.0f);
+        }
 
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            mouseOffsetX += (GetMouseX() - lastMousePosX) / zoom;
-            mouseOffsetY += (GetMouseY() - lastMousePosY) / zoom;
+            mouseDelta = GetMouseDelta();
+            camera.target.x += -1 * mouseDelta.x / camera.zoom;
+            camera.target.y += -1 * mouseDelta.y / camera.zoom;
         }
-        lastMousePosX = GetMousePosition().x;
-        lastMousePosY = GetMousePosition().y;
 
         currentIndex1 = head;
         while (currentIndex1 != NULL) {
@@ -115,11 +121,15 @@ int main() {
 
         ClearBackground(WHITE);
 
+        BeginMode2D(camera);
+
         currentIndex1 = head;
         while (currentIndex1 != NULL) {
-            DrawCircle((currentIndex1->position.x + mouseOffsetX) * zoom + winWidth / 2, (currentIndex1->position.y + mouseOffsetY) * zoom + winHeight / 2, currentIndex1->radius * zoom, BLACK);
+            DrawCircle((currentIndex1->position.x), (currentIndex1->position.y), currentIndex1->radius, BLACK);
             currentIndex1 = currentIndex1->nextBody;
         }
+
+        EndMode2D();
 
         DrawText(TextFormat("%d", GetFPS()), 5, 5, 25, BLACK);
 
