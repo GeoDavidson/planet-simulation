@@ -101,6 +101,7 @@ int main() {
     camera.zoom = 0.25f;
 
     Vector2 mouseDelta = {0.0f, 0.0f};
+    Vector2 mouseInit = {0.0f, 0.0f};
     float mouseWheel = 0.0f;
 
     double distance = 0;
@@ -139,7 +140,15 @@ int main() {
         }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            body_t body = {15, pow(3, 2) * 640000000000, {GetScreenToWorld2D(GetMousePosition(), camera).x, GetScreenToWorld2D(GetMousePosition(), camera).y}, {2, 0}, {0, 0}};
+            mouseInit = GetScreenToWorld2D(GetMousePosition(), camera);
+        } else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - mouseInit.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - mouseInit.y), 2));
+        } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - mouseInit.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - mouseInit.y), 2));
+            angle = atan2(mouseInit.y - GetScreenToWorld2D(GetMousePosition(), camera).y, mouseInit.x - GetScreenToWorld2D(GetMousePosition(), camera).x);
+            forceX = 5 * cos(angle);
+            forceY = 5 * sin(angle);
+            body_t body = {distance, pow(distance / 5, 2) * 640000000000, {mouseInit.x, mouseInit.y}, {forceX, forceY}, {0, 0}};
             newBody(&head, body.radius, body.mass, body.position, body.velocity, body.acceleration);
         }
 
@@ -173,6 +182,8 @@ int main() {
         ClearBackground(WHITE);
 
         BeginMode2D(camera);
+
+        DrawLine(mouseInit.x, mouseInit.y, GetScreenToWorld2D(GetMousePosition(), camera).x, GetScreenToWorld2D(GetMousePosition(), camera).y, RED);
 
         currentIndex1 = head;
         while (currentIndex1 != NULL) {
