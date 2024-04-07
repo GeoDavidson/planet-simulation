@@ -37,6 +37,43 @@ void newBody(body_t **head, int radius, float mass, Vector2 position, Vector2 ve
     }
 }
 
+void pop(body_t **head) {
+    if (*head != NULL) {
+        body_t *nextBody = (*head)->nextBody;
+        free(*head);
+        *head = nextBody;
+    }
+}
+
+void popLast(body_t **head) {
+    if ((*head) != NULL) {
+        if ((*head)->nextBody != NULL) {
+            body_t *current = *head;
+            while (current->nextBody->nextBody != NULL) {
+                current = current->nextBody;
+            }
+            free(current->nextBody);
+            current->nextBody = NULL;
+        } else {
+            pop(&(*head));
+        }
+    }
+}
+
+void popIndex(body_t **head, int index) {
+    if (index == 0) {
+        pop(&(*head));
+    } else {
+        body_t *current = *head;
+        for (int i = 0; i < index - 1; i++) {
+            current = current->nextBody;
+        }
+        body_t *nextBody = current->nextBody;
+        free(current->nextBody);
+        current->nextBody = nextBody->nextBody;
+    }
+}
+
 int main() {
     const int winWidth = 800;
     const int winHeight = 450;
@@ -46,10 +83,10 @@ int main() {
     body_t *head = NULL;
 
     body_t bodies[4] = {
-        {17, 500000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}},
-        {25, 5000000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}},
-        {25, 5000000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}},
-        {200, 1000000000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}},
+        {15, pow(3, 2) * 640000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}},
+        {25, pow(5, 2) * 640000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}},
+        {25, pow(5, 2) * 640000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}},
+        {200, pow(40, 2) * 640000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}},
     };
 
     newBody(&head, bodies[0].radius, bodies[0].mass, bodies[0].position, bodies[0].velocity, bodies[0].acceleration);
@@ -61,7 +98,7 @@ int main() {
     body_t *currentIndex2 = head;
 
     Camera2D camera = {0};
-    camera.zoom = 1.0f;
+    camera.zoom = 0.25f;
 
     Vector2 mouseDelta = {0.0f, 0.0f};
     float mouseWheel = 0.0f;
@@ -82,10 +119,28 @@ int main() {
             camera.zoom = Clamp(camera.zoom + mouseWheel * ZOOM_SPEED, ZOOM_SPEED, 10.0f);
         }
 
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_MIDDLE)) {
             mouseDelta = GetMouseDelta();
             camera.target.x += -1 * mouseDelta.x / camera.zoom;
             camera.target.y += -1 * mouseDelta.y / camera.zoom;
+        }
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            currentIndex1 = head;
+            int i = 0;
+            while (currentIndex1 != NULL) {
+                distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - currentIndex1->position.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - currentIndex1->position.y), 2));
+                if (distance < currentIndex1->radius) {
+                    popIndex(&head, i);
+                }
+                i++;
+                currentIndex1 = currentIndex1->nextBody;
+            }
+        }
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            body_t body = {15, pow(3, 2) * 640000000000, {GetScreenToWorld2D(GetMousePosition(), camera).x, GetScreenToWorld2D(GetMousePosition(), camera).y}, {2, 0}, {0, 0}};
+            newBody(&head, body.radius, body.mass, body.position, body.velocity, body.acceleration);
         }
 
         currentIndex1 = head;
