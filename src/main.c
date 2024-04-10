@@ -94,16 +94,16 @@ int main() {
     body_t *head = NULL;
 
     body_t bodies[4] = {
-        {15, pow(3, 2) * 640000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}, NULL},
+        {100, pow(3, 2) * 640000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}, NULL},
         {25, pow(5, 2) * 640000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}, NULL},
         {25, pow(5, 2) * 640000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}, NULL},
         {200, pow(40, 2) * 640000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}, NULL},
     };
 
-    newBody(&head, bodies[0]);
+    newBody(&head, bodies[2]);
     newBody(&head, bodies[1]);
     newBody(&head, bodies[3]);
-    newBody(&head, bodies[2]);
+    newBody(&head, bodies[0]);
 
     body_t *currentIndex1 = head;
     body_t *currentIndex2 = head;
@@ -113,6 +113,8 @@ int main() {
 
     Vector2 mouseDelta = {0.0f, 0.0f};
     float mouseWheel = 0.0f;
+
+    body_t *currentSelected = head;
 
     double distance = 0;
     double force = 0;
@@ -134,6 +136,31 @@ int main() {
             mouseDelta = GetMouseDelta();
             camera.target.x += -1 * mouseDelta.x / camera.zoom;
             camera.target.y += -1 * mouseDelta.y / camera.zoom;
+        }
+
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            currentSelected = head;
+            while (currentSelected != NULL) {
+                distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - currentSelected->position.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - currentSelected->position.y), 2));
+                if (distance < currentSelected->radius) {
+                    break;
+                } else {
+                    currentSelected = currentSelected->next;
+                }
+            }
+        } else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && currentSelected != NULL) {
+            distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - currentSelected->position.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - currentSelected->position.y), 2));
+            printf("%lf\n", distance);
+        } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && currentSelected != NULL) {
+            angle = atan2(currentSelected->position.y - GetScreenToWorld2D(GetMousePosition(), camera).y, currentSelected->position.x - GetScreenToWorld2D(GetMousePosition(), camera).x);
+            forceX = cos(angle);
+            forceY = sin(angle);
+
+            currentSelected->velocity.x = forceX * (distance / 500);
+            currentSelected->velocity.y = forceY * (distance / 500);
+
+            currentSelected->position.x += currentSelected->velocity.x;
+            currentSelected->position.y += currentSelected->velocity.y;
         }
 
         if (head != NULL) {
