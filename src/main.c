@@ -115,7 +115,7 @@ int main() {
     Vector2 mouseDelta = {0.0f, 0.0f};
     float mouseWheel = 0.0f;
 
-    body_t *currentSelected = head;
+    body_t *currentSelected = NULL;
 
     double distance = 0;
     double force = 0;
@@ -164,6 +164,8 @@ int main() {
 
             currentSelected->position.x += currentSelected->velocity.x;
             currentSelected->position.y += currentSelected->velocity.y;
+        } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            currentSelected = NULL;
         }
 
         if (head != NULL) {
@@ -203,6 +205,10 @@ int main() {
         ClearBackground(WHITE);
 
         BeginMode2D(camera);
+
+        if (currentSelected != NULL) {
+            DrawLine(currentSelected->position.x, currentSelected->position.y, GetScreenToWorld2D(GetMousePosition(), camera).x, GetScreenToWorld2D(GetMousePosition(), camera).y, RED);
+        }
 
         currentIndex1 = head;
         while (currentIndex1 != NULL) {
