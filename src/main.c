@@ -12,65 +12,76 @@ typedef struct body {
     Vector2 position;
     Vector2 velocity;
     Vector2 acceleration;
-    struct body *nextBody;
+    struct body *next;
 } body_t;
 
-void newBody(body_t **head, int radius, float mass, Vector2 position, Vector2 velocity, Vector2 acceleration) {
+void newBody(body_t **head, body_t body) {
     body_t *newBody = (body_t *)malloc(sizeof(body_t));
-    newBody->radius = radius;
-    newBody->mass = mass;
-    newBody->position = position;
-    newBody->velocity = velocity;
-    newBody->acceleration = acceleration;
-    newBody->nextBody = NULL;
+    newBody->radius = body.radius;
+    newBody->mass = body.mass;
+    newBody->position = body.position;
+    newBody->velocity = body.velocity;
+    newBody->acceleration = body.acceleration;
+    newBody->next = NULL;
 
     if (*head == NULL) {
         *head = newBody;
     } else {
         body_t *current = *head;
-
-        while (current->nextBody != NULL) {
-            current = current->nextBody;
+        while (current->next != NULL) {
+            current = current->next;
         }
-
-        current->nextBody = newBody;
+        current->next = newBody;
     }
 }
 
 void pop(body_t **head) {
-    if (*head != NULL) {
-        body_t *nextBody = (*head)->nextBody;
-        free(*head);
-        *head = nextBody;
+    if (*head == NULL) {
+        fprintf(stderr, "ERROR: underflow, can't pop from empty list\n");
+        exit(1);
     }
+    body_t *nextBody = (*head)->next;
+    free(*head);
+    *head = nextBody;
 }
 
 void popLast(body_t **head) {
-    if ((*head) != NULL) {
-        if ((*head)->nextBody != NULL) {
-            body_t *current = *head;
-            while (current->nextBody->nextBody != NULL) {
-                current = current->nextBody;
-            }
-            free(current->nextBody);
-            current->nextBody = NULL;
-        } else {
-            pop(&(*head));
+    if (*head == NULL) {
+        fprintf(stderr, "ERROR: underflow, can't pop from empty list\n");
+        exit(1);
+    } else if ((*head)->next == NULL) {
+        body_t *nextBody = (*head)->next;
+        free(*head);
+        *head = nextBody;
+    } else {
+        body_t *current = *head;
+        while (current->next->next != NULL) {
+            current = current->next;
         }
+        free(current->next);
+        current->next = NULL;
     }
 }
 
 void popIndex(body_t **head, int index) {
     if (index == 0) {
-        pop(&(*head));
+        pop(head);
     } else {
         body_t *current = *head;
         for (int i = 0; i < index - 1; i++) {
-            current = current->nextBody;
+            if (current->next == NULL) {
+                fprintf(stderr, "ERROR: index out of range\n");
+                exit(1);
+            }
+            current = current->next;
         }
-        body_t *nextBody = current->nextBody;
-        free(current->nextBody);
-        current->nextBody = nextBody->nextBody;
+        if (current->next == NULL) {
+            fprintf(stderr, "ERROR: index out of range\n");
+            exit(1);
+        }
+        body_t *tempNode = current->next;
+        current->next = tempNode->next;
+        free(tempNode);
     }
 }
 
@@ -83,16 +94,16 @@ int main() {
     body_t *head = NULL;
 
     body_t bodies[4] = {
-        {15, pow(3, 2) * 640000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}},
-        {25, pow(5, 2) * 640000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}},
-        {25, pow(5, 2) * 640000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}},
-        {200, pow(40, 2) * 640000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}},
+        {15, pow(3, 2) * 640000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}, NULL},
+        {25, pow(5, 2) * 640000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}, NULL},
+        {25, pow(5, 2) * 640000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}, NULL},
+        {200, pow(40, 2) * 640000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}, NULL},
     };
 
-    newBody(&head, bodies[0].radius, bodies[0].mass, bodies[0].position, bodies[0].velocity, bodies[0].acceleration);
-    newBody(&head, bodies[1].radius, bodies[1].mass, bodies[1].position, bodies[1].velocity, bodies[1].acceleration);
-    newBody(&head, bodies[2].radius, bodies[2].mass, bodies[2].position, bodies[2].velocity, bodies[2].acceleration);
-    newBody(&head, bodies[3].radius, bodies[3].mass, bodies[3].position, bodies[3].velocity, bodies[3].acceleration);
+    newBody(&head, bodies[0]);
+    newBody(&head, bodies[1]);
+    newBody(&head, bodies[3]);
+    newBody(&head, bodies[2]);
 
     body_t *currentIndex1 = head;
     body_t *currentIndex2 = head;
@@ -101,7 +112,6 @@ int main() {
     camera.zoom = 0.25f;
 
     Vector2 mouseDelta = {0.0f, 0.0f};
-    Vector2 mouseInit = {0.0f, 0.0f};
     float mouseWheel = 0.0f;
 
     double distance = 0;
@@ -126,30 +136,15 @@ int main() {
             camera.target.y += -1 * mouseDelta.y / camera.zoom;
         }
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-            currentIndex1 = head;
-            int i = 0;
-            while (currentIndex1 != NULL) {
-                distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - currentIndex1->position.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - currentIndex1->position.y), 2));
-                if (distance < currentIndex1->radius) {
-                    popIndex(&head, i);
-                }
-                i++;
-                currentIndex1 = currentIndex1->nextBody;
-            }
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            pop(&head);
         }
 
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            mouseInit = GetScreenToWorld2D(GetMousePosition(), camera);
-        } else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - mouseInit.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - mouseInit.y), 2));
-        } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-            distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - mouseInit.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - mouseInit.y), 2));
-            angle = atan2(mouseInit.y - GetScreenToWorld2D(GetMousePosition(), camera).y, mouseInit.x - GetScreenToWorld2D(GetMousePosition(), camera).x);
-            forceX = 5 * cos(angle);
-            forceY = 5 * sin(angle);
-            body_t body = {distance, pow(distance / 5, 2) * 640000000000, {mouseInit.x, mouseInit.y}, {forceX, forceY}, {0, 0}};
-            newBody(&head, body.radius, body.mass, body.position, body.velocity, body.acceleration);
+        if (head != NULL) {
+            if (head->next == NULL) {
+                head->position.x += head->velocity.x;
+                head->position.y += head->velocity.y;
+            }
         }
 
         currentIndex1 = head;
@@ -172,9 +167,9 @@ int main() {
                     currentIndex1->position.x += currentIndex1->velocity.x;
                     currentIndex1->position.y += currentIndex1->velocity.y;
                 }
-                currentIndex2 = currentIndex2->nextBody;
+                currentIndex2 = currentIndex2->next;
             }
-            currentIndex1 = currentIndex1->nextBody;
+            currentIndex1 = currentIndex1->next;
         }
 
         BeginDrawing();
@@ -183,12 +178,10 @@ int main() {
 
         BeginMode2D(camera);
 
-        DrawLine(mouseInit.x, mouseInit.y, GetScreenToWorld2D(GetMousePosition(), camera).x, GetScreenToWorld2D(GetMousePosition(), camera).y, RED);
-
         currentIndex1 = head;
         while (currentIndex1 != NULL) {
             DrawCircle((currentIndex1->position.x), (currentIndex1->position.y), currentIndex1->radius, BLACK);
-            currentIndex1 = currentIndex1->nextBody;
+            currentIndex1 = currentIndex1->next;
         }
 
         EndMode2D();
