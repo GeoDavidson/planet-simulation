@@ -35,7 +35,7 @@ void newBody(body_t **head, body_t body) {
     }
 }
 
-void pop(body_t **head) {
+void popHead(body_t **head) {
     if (*head == NULL) {
         fprintf(stderr, "ERROR: underflow, can't pop from empty list\n");
         exit(1);
@@ -65,7 +65,7 @@ void popLast(body_t **head) {
 
 void popIndex(body_t **head, int index) {
     if (index == 0) {
-        pop(head);
+        popHead(head);
     } else {
         body_t *current = *head;
         for (int i = 0; i < index - 1; i++) {
@@ -134,10 +134,6 @@ int main() {
             mouseDelta = GetMouseDelta();
             camera.target.x += -1 * mouseDelta.x / camera.zoom;
             camera.target.y += -1 * mouseDelta.y / camera.zoom;
-        }
-
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-            pop(&head);
         }
 
         if (head != NULL) {
