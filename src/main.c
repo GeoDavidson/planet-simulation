@@ -5,6 +5,7 @@
 
 #define G 6.674e-11
 #define ZOOM_SPEED 0.025f
+#define ATTRACTION_SCALER 10000
 
 typedef struct body {
     int radius;
@@ -94,7 +95,7 @@ int main() {
     body_t *head = NULL;
 
     body_t bodies[4] = {
-        {100, pow(3, 2) * 640000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}, NULL},
+        {15, pow(3, 2) * 640000000000, {winWidth / 2, -winHeight * 2}, {5, 0}, {0, 0}, NULL},
         {25, pow(5, 2) * 640000000000, {winWidth * 3, winHeight / 2}, {0, 4}, {0, 0}, NULL},
         {25, pow(5, 2) * 640000000000, {winWidth / 2, winHeight * 3}, {-4, 0}, {0, 0}, NULL},
         {200, pow(40, 2) * 640000000000, {winWidth / 2, winHeight / 2}, {0, 0}, {0, 0}, NULL},
@@ -150,14 +151,16 @@ int main() {
             }
         } else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && currentSelected != NULL) {
             distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - currentSelected->position.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - currentSelected->position.y), 2));
-            printf("%lf\n", distance);
-        } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && currentSelected != NULL) {
-            angle = atan2(currentSelected->position.y - GetScreenToWorld2D(GetMousePosition(), camera).y, currentSelected->position.x - GetScreenToWorld2D(GetMousePosition(), camera).x);
-            forceX = cos(angle);
-            forceY = sin(angle);
+            force = distance * currentSelected->mass / ATTRACTION_SCALER ;
+            angle = atan2(GetScreenToWorld2D(GetMousePosition(), camera).y - currentSelected->position.y, GetScreenToWorld2D(GetMousePosition(), camera).x - currentSelected->position.x);
+            forceX = force * cos(angle);
+            forceY = force * sin(angle);
 
-            currentSelected->velocity.x = forceX * (distance / 500);
-            currentSelected->velocity.y = forceY * (distance / 500);
+            currentSelected->acceleration.x = forceX / currentSelected->mass;
+            currentSelected->acceleration.y = forceY / currentSelected->mass;
+
+            currentSelected->velocity.x += currentSelected->acceleration.x;
+            currentSelected->velocity.y += currentSelected->acceleration.y;
 
             currentSelected->position.x += currentSelected->velocity.x;
             currentSelected->position.y += currentSelected->velocity.y;
