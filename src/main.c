@@ -151,7 +151,7 @@ int main() {
             }
         } else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) && currentSelected != NULL) {
             distance = sqrt(pow((GetScreenToWorld2D(GetMousePosition(), camera).x - currentSelected->position.x), 2) + pow((GetScreenToWorld2D(GetMousePosition(), camera).y - currentSelected->position.y), 2));
-            force = distance * currentSelected->mass / ATTRACTION_SCALER ;
+            force = distance * currentSelected->mass / ATTRACTION_SCALER;
             angle = atan2(GetScreenToWorld2D(GetMousePosition(), camera).y - currentSelected->position.y, GetScreenToWorld2D(GetMousePosition(), camera).x - currentSelected->position.x);
             forceX = force * cos(angle);
             forceY = force * sin(angle);
