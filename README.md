@@ -2,4 +2,4 @@
 
 Playing around with Raylib.
 
-![sim.gif](README.assets/sim.gif)
+![simulation.gif](README.assets/simulation.gif)
