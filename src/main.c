@@ -90,7 +90,7 @@ int main() {
     const int winWidth = 800;
     const int winHeight = 450;
 
-    InitWindow(winWidth, winHeight, "basic window");
+    InitWindow(winWidth, winHeight, "Planet Simulation");
 
     body_t *head = NULL;
 
