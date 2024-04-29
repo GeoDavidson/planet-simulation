@@ -1,5 +1,5 @@
-# Raylib Simulation
+# Planet Simulation
 
-Playing around with Raylib.
+Simulating orbiting planets with Raylib.
 
 ![simulation.gif](README.assets/simulation.gif)
