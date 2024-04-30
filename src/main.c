@@ -218,7 +218,7 @@ int main() {
 
         EndMode2D();
 
-        DrawText(TextFormat("%d", GetFPS()), 5, 5, 25, BLACK);
+        DrawFPS(5, 5);
 
         EndDrawing();
     }
